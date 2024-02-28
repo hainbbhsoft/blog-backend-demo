@@ -2,7 +2,9 @@ package com.example.blogdemo.model;
 
 import jakarta.persistence.*;
 import lombok.*;
-import org.jetbrains.annotations.NotNull;
+//import org.jetbrains.annotations.NotNull;
+
+import javax.validation.constraints.NotNull;
 
 @Entity
 @Data
