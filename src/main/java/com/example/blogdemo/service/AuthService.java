@@ -2,6 +2,8 @@ package com.example.blogdemo.service;
 
 //Main business logic
 
+import com.example.blogdemo.dto.AuthenticationResponse;
+import com.example.blogdemo.dto.LoginRequest;
 import com.example.blogdemo.dto.RegisterRequest;
 import com.example.blogdemo.exceptions.SpringRedditException;
 import com.example.blogdemo.model.NotificationEmail;
@@ -11,7 +13,6 @@ import com.example.blogdemo.repository.UserRepository;
 import com.example.blogdemo.repository.VerificationTokenRepository;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import java.time.Instant;
@@ -28,6 +29,7 @@ public class AuthService {
     private  final VerificationTokenRepository verificationTokenRepository;
 
     private final MailService mailService;
+
     @Transactional
     public void signup(RegisterRequest registerRequest) throws SpringRedditException {
         //Creating user object
@@ -75,5 +77,15 @@ public class AuthService {
         //Enable and save to db
         user.setEnabled(true);
         userRepository.save(user);
+    }
+
+    @Transactional
+    public AuthenticationResponse login(LoginRequest loginRequest) {
+//        Authentication authenticate = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(loginRequest.getUsername(),
+//                loginRequest.getPassword()));
+//        SecurityContextHolder.getContext().setAuthentication(authenticate);
+//        String token = jwtProvider.generateToken(authenticate);
+//        return new AuthenticationResponse(token, loginRequest.getUsername());
+        return new AuthenticationResponse();
     }
 }

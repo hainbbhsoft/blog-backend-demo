@@ -1,5 +1,7 @@
 package com.example.blogdemo.controller;
 
+import com.example.blogdemo.dto.AuthenticationResponse;
+import com.example.blogdemo.dto.LoginRequest;
 import com.example.blogdemo.dto.RegisterRequest;
 import com.example.blogdemo.exceptions.SpringRedditException;
 import com.example.blogdemo.service.AuthService;
@@ -31,5 +33,11 @@ public class AuthController {
         authService.verifyAccount(token);
         return new ResponseEntity<>("Account Activated Successful",
                 HttpStatus.OK);
+    }
+
+    //Login endpoint
+    @PostMapping("/login")
+    public AuthenticationResponse login(@RequestBody LoginRequest loginRequest) {
+        return authService.login(loginRequest);
     }
 }
