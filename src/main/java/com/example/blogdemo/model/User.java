@@ -18,6 +18,7 @@ public class User {
     private Long userId;
 
     @NotBlank(message = "Username is required")
+    @Column(unique = true)
     private String username;
 
     @NotBlank(message = "Password is required")
@@ -30,4 +31,8 @@ public class User {
     private Instant createdDate;
 
     private boolean enabled;
+
+    public boolean getEnabled() {
+        return this.enabled;
+    }
 }

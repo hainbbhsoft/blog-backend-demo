@@ -5,14 +5,26 @@ package com.example.blogdemo.service;
 import com.example.blogdemo.dto.AuthenticationResponse;
 import com.example.blogdemo.dto.LoginRequest;
 import com.example.blogdemo.dto.RegisterRequest;
+import com.example.blogdemo.exceptions.CustomAuthenticationException;
+import com.example.blogdemo.exceptions.DuplicateEntityException;
 import com.example.blogdemo.exceptions.SpringRedditException;
 import com.example.blogdemo.model.NotificationEmail;
 import com.example.blogdemo.model.User;
 import com.example.blogdemo.model.VerificationToken;
 import com.example.blogdemo.repository.UserRepository;
 import com.example.blogdemo.repository.VerificationTokenRepository;
+import com.example.blogdemo.service.jwt.UserDetailsServiceImpl;
+import com.example.blogdemo.utils.JwtUtil;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.DisabledException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import java.time.Instant;
@@ -30,6 +42,12 @@ public class AuthService {
 
     private final MailService mailService;
 
+//    private final AuthenticationManager authenticationManager;
+
+    private final UserDetailsServiceImpl userDetailsService;
+
+    private final JwtUtil jwtUtil;
+
     @Transactional
     public void signup(RegisterRequest registerRequest) throws SpringRedditException {
         //Creating user object
@@ -40,6 +58,11 @@ public class AuthService {
         user.setCreatedDate(Instant.now());
         user.setEnabled(false); //Set to true if user is validated
 
+        //Check for exist username
+        if (userRepository.existsByUsername(registerRequest.getUsername())) {
+            throw new DuplicateEntityException("This account has been register");
+        }
+
         //Save to db
         userRepository.save(user);
 
@@ -47,7 +70,7 @@ public class AuthService {
         String token = generateVerificationToken(user);
         mailService.sendMail(new NotificationEmail("Activate your Account", user.getEmail(),
                 "Click this link to activate your account: \n" +
-                "http://localhost:8080/api/auth/accountVerification/" + token));
+                "http://localhost:8080/api/v1/auth/accountVerification/" + token));
     }
 
     private String generateVerificationToken(User user) {
@@ -81,11 +104,27 @@ public class AuthService {
 
     @Transactional
     public AuthenticationResponse login(LoginRequest loginRequest) {
-//        Authentication authenticate = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(loginRequest.getUsername(),
-//                loginRequest.getPassword()));
-//        SecurityContextHolder.getContext().setAuthentication(authenticate);
-//        String token = jwtProvider.generateToken(authenticate);
-//        return new AuthenticationResponse(token, loginRequest.getUsername());
-        return new AuthenticationResponse();
+        try {
+//            Authentication authUser = authenticationManager.authenticate(
+//                    new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword())
+//            );
+            final UserDetails userDetails = userDetailsService.loadUserByUsername(loginRequest.getUsername());
+            boolean isEnabled = userDetails.isEnabled();
+            String hashedPassword = userDetails.getPassword();
+            if (!passwordEncoder.matches(loginRequest.getPassword(), hashedPassword)) {
+                throw new CustomAuthenticationException("Wrong password");
+            }
+            if (isEnabled) {
+                String username = userDetails.getUsername();
+                String jwt = jwtUtil.generateToken(username);
+
+                return new AuthenticationResponse(jwt, username);
+            } else {
+                throw new DisabledException("User account is not activated");
+            }
+        } catch (UsernameNotFoundException e) {
+            // Handle disabled user account
+            throw new UsernameNotFoundException("User not found");
+        }
     }
 }
