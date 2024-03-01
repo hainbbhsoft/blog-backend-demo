@@ -1,4 +1,4 @@
-package com.example.blogdemo.utils;
+package com.example.blogdemo.service.jwt;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -12,9 +12,10 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 import io.jsonwebtoken.security.Keys;
+import org.springframework.stereotype.Service;
 
-@Component
-public class JwtUtil {
+@Service
+public class JwtService {
 
     public static final String SECRET = "5367566B59703373367639792F423F4528482B4D6251655468576D5A71347437";
 
@@ -40,6 +41,10 @@ public class JwtUtil {
                 .getBody();
     }
 
+    public boolean isTokenValid(String token, UserDetails userDetails) {
+        final String username = extractUsername(token);
+        return (username.equals(userDetails.getUsername())) && !isTokenExpired(token);
+    }
     private Boolean isTokenExpired(String token) {
         return extractExpiration(token).before(new Date());
     }

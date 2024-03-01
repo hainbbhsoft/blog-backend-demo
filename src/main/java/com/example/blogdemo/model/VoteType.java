@@ -1,15 +1,14 @@
 package com.example.blogdemo.model;
 
-import java.util.Arrays;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
+
+@AllArgsConstructor
+@NoArgsConstructor
+@Getter
 public enum VoteType {
     UPVOTE(1), DOWNVOTE(-1);
-//    private int direction;
-
-    VoteType(int direction) {
-    }
-
-//    public Integer getDirection() {
-//        return direction;
-//    }
+    private int i;
 }

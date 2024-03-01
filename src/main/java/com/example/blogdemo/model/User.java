@@ -7,7 +7,6 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotEmpty;
 import java.time.Instant;
 import java.util.Collection;
 
@@ -34,10 +33,6 @@ public class User implements UserDetails {
     private Instant createdDate;
 
     private boolean enabled;
-
-    public boolean getEnabled() {
-        return this.enabled;
-    }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

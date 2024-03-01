@@ -13,12 +13,12 @@ import com.example.blogdemo.model.User;
 import com.example.blogdemo.model.VerificationToken;
 import com.example.blogdemo.repository.UserRepository;
 import com.example.blogdemo.repository.VerificationTokenRepository;
-import com.example.blogdemo.service.jwt.UserDetailsServiceImpl;
-import com.example.blogdemo.utils.JwtUtil;
+import com.example.blogdemo.service.jwt.JwtService;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -37,11 +37,9 @@ public class AuthService {
 
     private final MailService mailService;
 
-//    private final AuthenticationManager authenticationManager;
+    private final UserDetailsService userDetailsService;
 
-    private final UserDetailsServiceImpl userDetailsService;
-
-    private final JwtUtil jwtUtil;
+    private final JwtService jwtService;
 
     @Transactional
     public void signup(RegisterRequest registerRequest) throws SpringRedditException {
@@ -108,7 +106,7 @@ public class AuthService {
             }
             if (isEnabled) {
                 String username = userDetails.getUsername();
-                String jwt = jwtUtil.generateToken(username);
+                String jwt = jwtService.generateToken(username);
 
                 return new AuthenticationResponse(jwt, username);
             } else {
